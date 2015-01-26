@@ -7,6 +7,9 @@ import (
 )
 
 type Client struct {
+	addr  string
+	user  string
+	pass  string
 	inner *winrm.Client
 }
 
@@ -16,11 +19,11 @@ func New(addr, user, pass string) (*Client, error) {
 		return nil, err
 	}
 	inner := winrm.NewClient(endpoint, user, pass)
-	return &Client{inner}, nil
+	return &Client{addr, user, pass, inner}, nil
 }
 
 func (c *Client) Info() (*Info, error) {
-	return fetchInfo(c.inner)
+	return fetchInfo(c.inner, c.user, c.pass)
 }
 
 func (c *Client) List(remotePath string) ([]FileItem, error) {
@@ -31,7 +34,6 @@ func (c *Client) Cmd(stdout, stderr io.Writer, impersonate bool, arguments ...st
 	if !impersonate {
 		return runCmd(c.inner, stdout, stderr, arguments...)
 	} else {
-		return runElevatedCmd(c.inner, stdout, stderr, arguments...)
+		return runElevatedCmd(c.inner, c.user, c.pass, stdout, stderr, arguments...)
 	}
 }
-

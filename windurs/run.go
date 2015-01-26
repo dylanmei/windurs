@@ -32,13 +32,13 @@ func runCmd(client *winrm.Client, stdout, stderr io.Writer, arguments ...string)
 	return cmd.ExitCode(), nil
 }
 
-func runElevatedCmd(client *winrm.Client, stdout, stderr io.Writer, arguments ...string) (int, error) {
+func runElevatedCmd(client *winrm.Client, user, pass string, stdout, stderr io.Writer, arguments ...string) (int, error) {
 	// generate command
 	command := strings.Join(arguments, " ")
 	var buffer bytes.Buffer
 	err := elevatedTemplate.Execute(&buffer, elevatedOptions{
-		User:            "packer",
-		Password:        "packer",
+		User:            user,
+		Password:        pass,
 		TaskDescription: "Command: " + command,
 		TaskName:        fmt.Sprintf("windurs-%s", uuid.TimeOrderedUUID()),
 		EncodedCommand:  psencode([]byte(command + "; exit $LASTEXITCODE")),

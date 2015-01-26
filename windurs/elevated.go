@@ -11,7 +11,7 @@ type elevatedOptions struct {
 }
 
 var elevatedTemplate = template.Must(template.New("ElevatedCommand").Parse(`
-$name = "windurs-{{.TaskName}}"
+$name = "{{.TaskName}}"
 $log = "$env:TEMP\$name.out"
 $s = New-Object -ComObject "Schedule.Service"
 $s.Connect()
@@ -51,7 +51,7 @@ $t.XmlText = @'
   <Actions Context="Author">
     <Exec>
       <Command>cmd</Command>
-	  <Arguments>/c powershell.exe -EncodedCommand {{.EncodedCommand}} &gt; %TEMP%\windurs-{{.TaskName}}.out 2&gt;&amp;1</Arguments>
+	  <Arguments>/c powershell.exe -EncodedCommand {{.EncodedCommand}} &gt; %TEMP%\{{.TaskName}}.out 2&gt;&amp;1</Arguments>
     </Exec>
   </Actions>
 </Task>

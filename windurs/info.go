@@ -42,7 +42,7 @@ type PsSettings struct {
 	ExecutionPolicy string
 }
 
-func fetchInfo(client *winrm.Client) (*Info, error) {
+func fetchInfo(client *winrm.Client, user, pass string) (*Info, error) {
 	var err error
 	info := &Info{
 		WinRM:      WinrmConfig{},
@@ -59,7 +59,7 @@ func fetchInfo(client *winrm.Client) (*Info, error) {
 		return info, err
 	}
 
-	err = runWinrmConfig(client, &info.WinRM)
+	err = runWinrmConfig(client, user, pass, &info.WinRM)
 	if err != nil {
 		return info, err
 	}
@@ -67,12 +67,12 @@ func fetchInfo(client *winrm.Client) (*Info, error) {
 	return info, nil
 }
 
-func runWinrmConfig(client *winrm.Client, config *WinrmConfig) error {
+func runWinrmConfig(client *winrm.Client, user, pass string, config *WinrmConfig) error {
 	command := "winrm get winrm/config -format:xml"
 
 	stdout := bytes.NewBuffer(make([]byte, 0))
 	stderr := bytes.NewBuffer(make([]byte, 0))
-	_, err := runElevatedCmd(client, stdout, stderr, command)
+	_, err := runElevatedCmd(client, user, pass, stdout, stderr, command)
 
 	if os.Getenv("WINDURS_DEBUG") != "" && stderr.Len() > 0 {
 		log.Printf("STDERR returned: %s\n", stderr.String())
