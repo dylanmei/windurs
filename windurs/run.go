@@ -37,11 +37,11 @@ func runElevatedCmd(client *winrm.Client, stdout, stderr io.Writer, arguments ..
 	command := strings.Join(arguments, " ")
 	var buffer bytes.Buffer
 	err := elevatedTemplate.Execute(&buffer, elevatedOptions{
-		User:           "packer",
-		Password:       "packer",
-		Description:    "Command: " + command,
-		EncodedCommand: psencode([]byte(command + "; exit $LASTEXITCODE")),
-		LogFile:        fmt.Sprintf("windurs-%s.out", uuid.TimeOrderedUUID()),
+		User:            "packer",
+		Password:        "packer",
+		TaskDescription: "Command: " + command,
+		TaskName:        fmt.Sprintf("windurs-%s", uuid.TimeOrderedUUID()),
+		EncodedCommand:  psencode([]byte(command + "; exit $LASTEXITCODE")),
 	})
 
 	if err != nil {
