@@ -13,7 +13,10 @@ type elevatedOptions struct {
 var elevatedTemplate = template.Must(template.New("ElevatedCommand").Parse(`
 $name = "windurs-{{.TaskName}}"
 $log = "$env:TEMP\$name.out"
-$task_xml = @'
+$s = New-Object -ComObject "Schedule.Service"
+$s.Connect()
+$t = $s.NewTask($null)
+$t.XmlText = @'
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -53,34 +56,30 @@ $task_xml = @'
   </Actions>
 </Task>
 '@
-$schedule = New-Object -ComObject "Schedule.Service"
-$schedule.Connect()
-$task = $schedule.NewTask($null)
-$task.XmlText = $task_xml
-$folder = $schedule.GetFolder("\")
-$folder.RegisterTaskDefinition($name, $task, 6, "{{.User}}", "{{.Password}}", 1, $null) | Out-Null
-$registered_task = $folder.GetTask("\$name")
-$registered_task.Run($null) | Out-Null
+$f = $s.GetFolder("\")
+$f.RegisterTaskDefinition($name, $t, 6, "{{.User}}", "{{.Password}}", 1, $null) | Out-Null
+$t = $f.GetTask("\$name")
+$t.Run($null) | Out-Null
 $timeout = 10
 $sec = 0
-while ( (!($registered_task.state -eq 4)) -and ($sec -lt $timeout) ) {
+while ((!($t.state -eq 4)) -and ($sec -lt $timeout)) {
   Start-Sleep -s 1
   $sec++
 }
-function SlurpOutput($cur_line) {
+function SlurpOutput($l) {
   if (Test-Path $log) {
-    Get-Content $log | select -skip $cur_line | ForEach {
-      $cur_line += 1
+    Get-Content $log | select -skip $l | ForEach {
+      $l += 1
       Write-Host "$_"
     }
   }
-  return $cur_line
+  return $l
 }
-$cur_line = 0
+$line = 0
 do {
   Start-Sleep -m 100
-  $cur_line = SlurpOutput $cur_line
-} while (!($registered_task.state -eq 3))
-$exit_code = $registered_task.LastTaskResult
-[System.Runtime.Interopservices.Marshal]::ReleaseComObject($schedule) | Out-Null
-exit $exit_code`))
+  $line = SlurpOutput $line
+} while (!($t.state -eq 3))
+$result = $t.LastTaskResult
+[System.Runtime.Interopservices.Marshal]::ReleaseComObject($s) | Out-Null
+exit $result`))
