@@ -87,7 +87,7 @@ func runWinrmConfig(client *winrm.Client, user, pass string, config *WinrmConfig
 
 func runPsVersion(client *winrm.Client, settings *PsSettings) error {
 	script := "$PSVersionTable.PSVersion | ConvertTo-Xml -NoTypeInformation -As String"
-	stdout, stderr, err := client.RunWithString("powershell -Command \""+script+"\"", "")
+	stdout, stderr, _, err := client.RunWithString("powershell -Command \""+script+"\"", "")
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("Couldn't execute script %s: %v", script, err))
@@ -114,7 +114,7 @@ func runPsVersion(client *winrm.Client, settings *PsSettings) error {
 
 func runPsExecutionPolicy(client *winrm.Client, settings *PsSettings) error {
 	script := "Get-ExecutionPolicy | Select-Object"
-	stdout, stderr, err := client.RunWithString("powershell -Command \""+script+"\"", "")
+	stdout, stderr, _, err := client.RunWithString("powershell -Command \""+script+"\"", "")
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("Couldn't execute script %s: %v", script, err))

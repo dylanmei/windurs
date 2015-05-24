@@ -18,7 +18,10 @@ func New(addr, user, pass string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	inner := winrm.NewClient(endpoint, user, pass)
+	inner, err := winrm.NewClient(endpoint, user, pass)
+	if err != nil {
+		return nil, err
+	}
 	return &Client{addr, user, pass, inner}, nil
 }
 
